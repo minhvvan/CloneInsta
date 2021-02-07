@@ -61,7 +61,6 @@ class LoginActivity : AppCompatActivity() {
         var facebookSignInButton = findViewById<LoginButton>(R.id.facebook_signIn_button)
         auth = Firebase.auth
 
-
         callbackManager = CallbackManager.Factory.create()
 
         facebookSignInButton.setReadPermissions("email", "public_profile")
@@ -81,19 +80,13 @@ class LoginActivity : AppCompatActivity() {
                 // ...
             }
         })
-
-
-//        facebookSignInButton.setOnClickListener {
-//            facebookLogin()
-//        }
-//        printHashKey()
     }
 
     override fun onStart() {
         super.onStart()
         // Check if user is signed in (non-null) and update UI accordingly.
-        val currentUser = auth?.currentUser
-        moveMainPage(currentUser)
+//        val currentUser = auth?.currentUser
+//        moveMainPage(currentUser)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
