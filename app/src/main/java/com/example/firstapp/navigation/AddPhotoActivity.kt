@@ -6,10 +6,16 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import com.example.firstapp.R
+import com.example.firstapp.navigation.model.ContentDTO
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -17,6 +23,8 @@ class AddPhotoActivity : AppCompatActivity() {
     var PICK_IMAGE_FROM_ALBUM = 0
     var storage: FirebaseStorage? = null
     var photoUri: Uri? = null
+    var auth: FirebaseAuth? = null
+    var firestore: FirebaseFirestore? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_photo)
@@ -25,6 +33,8 @@ class AddPhotoActivity : AppCompatActivity() {
 
         //Initiate storage
         storage = FirebaseStorage.getInstance()
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         //Open the album
         var photoPickerIntent = Intent(Intent.ACTION_PICK)
@@ -57,10 +67,37 @@ class AddPhotoActivity : AppCompatActivity() {
         //make filename
         var timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         var imageFileName = "IMAGE_" + timestamp + "_.png"
+        var addPhotoEditExplain = findViewById<EditText>(R.id.addPhoto_edit_explain)
 
         var storageRef = storage?.reference?.child("image")?.child(imageFileName)
-        storageRef?.putFile(photoUri!!)?.addOnSuccessListener {
-            Toast.makeText(this, getString(R.string.upload_image),Toast.LENGTH_LONG).show()
+
+        //promise
+        storageRef?.putFile(photoUri!!)?.continueWithTask { task: Task<UploadTask.TaskSnapshot> ->
+            return@continueWithTask storageRef.downloadUrl
+        }?.addOnSuccessListener{ uri ->
+                var contetnDTO = ContentDTO()
+
+                //Insert downloadUrl of image
+                contetnDTO.imageUrl = uri.toString()
+
+                //Insert uid of user
+                contetnDTO.uid = auth?.currentUser?.uid
+
+                //Insert userId
+                contetnDTO.userId = auth?.currentUser?.email
+
+                //Insert explain of content
+                contetnDTO.explain = addPhotoEditExplain.text.toString()
+
+                //Insert timestamp
+                contetnDTO.timestamp = System.currentTimeMillis()
+
+                firestore?.collection("images")?.document()?.set(contetnDTO)
+
+                setResult(Activity.RESULT_OK)
+
+                finish()
+
         }
     }
 
