@@ -18,9 +18,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         setContentView(R.layout.activity_main)
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigation.setOnNavigationItemSelectedListener(this)
-        bottomNavigation.selectedItemId = R.id.action_home;
         //사진 권한
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),1)
+
+        //Set default screen
+        bottomNavigation.selectedItemId = R.id.action_home;
     }
 
 
