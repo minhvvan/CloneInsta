@@ -42,6 +42,7 @@ class LoginActivity : AppCompatActivity() {
         MultiDex.install(this);
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -91,11 +92,12 @@ class LoginActivity : AppCompatActivity() {
         })
     }
 
+    //자동 로그인
     override fun onStart() {
         super.onStart()
         // Check if user is signed in (non-null) and update UI accordingly.
 //        val currentUser = auth?.currentUser
-//        moveMainPage(currentUser)
+        moveMainPage(auth?.currentUser)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -190,6 +192,7 @@ class LoginActivity : AppCompatActivity() {
     fun moveMainPage(user: FirebaseUser?){
         if(user != null){
             startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
     }
 
