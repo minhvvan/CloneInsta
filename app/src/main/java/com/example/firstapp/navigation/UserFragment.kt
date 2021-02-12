@@ -1,6 +1,7 @@
 package com.example.firstapp.navigation
 
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +24,7 @@ import com.example.firstapp.LoginActivity
 import com.example.firstapp.MainActivity
 import com.example.firstapp.R
 import com.example.firstapp.navigation.model.ContentDTO
+import com.example.firstapp.navigation.model.FollowDTO
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -71,6 +76,10 @@ class UserFragment: Fragment(){
             toolbarTitleImage.visibility = View.GONE
             toolbarUsername.visibility = View.VISIBLE
             toolbarBtnBack.visibility = View.VISIBLE
+
+            accountBtnFollowSignout?.setOnClickListener {
+                requestFollow()
+            }
         }
 
         accountIvProfile?.setOnClickListener {
@@ -85,9 +94,88 @@ class UserFragment: Fragment(){
         accountRecyclerView?.layoutManager = GridLayoutManager(activity, 3)
 
         getProfileImage()
+        getFollowerAndFollowing()
         return fragmentView
     }
+    fun requestFollow(){
+        //save data to my account
+        var tsDocFollowing = firestore?.collection("users")?.document(currentUserUid!!)
+        firestore?.runTransaction { transaction ->
+            var followDTO = transaction.get(tsDocFollowing!!).toObject(FollowDTO::class.java)
+            if(followDTO == null){
+                followDTO = FollowDTO()
+                followDTO!!.followingCount = 1
+                followDTO!!.followers[uid!!] = true
 
+                transaction.set(tsDocFollowing, followDTO)
+                return@runTransaction
+            }
+
+            if(followDTO.follwings.containsKey(uid)){
+                //remove following
+                followDTO?.followingCount = followDTO?.followingCount - 1
+                followDTO?.followers.remove(uid)
+            }else{
+                followDTO?.followingCount = followDTO?.followingCount + 1
+                followDTO?.followers[uid!!] = true
+            }
+            transaction.set(tsDocFollowing, followDTO)
+            return@runTransaction
+        }
+
+        //save data to third person
+        var tsDocFollower = firestore?.collection("users")?.document(uid!!)
+        firestore?.runTransaction { transition ->
+            var followDTO = transition.get(tsDocFollower!!).toObject(FollowDTO::class.java)
+            if(followDTO == null){
+                followDTO = FollowDTO()
+                followDTO!!.followerCount = 1
+                followDTO!!.followers[currentUserUid!!] = true
+
+                transition.set(tsDocFollower, followDTO!!)
+                return@runTransaction
+            }else{
+                if(followDTO!!.followers.containsKey(currentUserUid!!)){
+                    followDTO!!.followerCount = followDTO!!.followerCount - 1
+                    followDTO!!.followers.remove(currentUserUid!!)
+                }else{
+                    followDTO!!.followerCount = followDTO!!.followerCount + 1
+                    followDTO!!.followers[currentUserUid!!] = true
+                }
+
+                transition.set(tsDocFollower, followDTO!!)
+                return@runTransaction
+            }
+        }
+    }
+    fun getFollowerAndFollowing(){
+        var accountTvFollowingCount = fragmentView?.findViewById<TextView>(R.id.account_tv_following_count)
+        var accountTvFollowerCount = fragmentView?.findViewById<TextView>(R.id.account_tv_follower_count)
+        var accountBtnFollowSingout = fragmentView?.findViewById<Button>(R.id.account_btn_follow_signout)
+        firestore?.collection("users")?.document(uid!!)?.addSnapshotListener{ value: DocumentSnapshot?, error: FirebaseFirestoreException? ->
+            if(value == null){
+                return@addSnapshotListener
+            }
+            var followDTO = value.toObject(FollowDTO::class.java)
+            if(followDTO?.followingCount != null){
+                accountTvFollowingCount?.text = followDTO?.followingCount.toString()
+            }
+            if(followDTO?.followerCount != null){
+                accountTvFollowerCount?.text = followDTO?.followerCount.toString()
+                if(followDTO?.followers.containsKey(currentUserUid!!)){
+                    accountBtnFollowSingout?.text = getString(R.string.follow_cancel)
+                    accountBtnFollowSingout?.background?.colorFilter =
+                    BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ContextCompat.getColor(activity!!, R.color.colorLightGray), BlendModeCompat.MODULATE)
+                    accountBtnFollowSingout?.invalidate()
+                }else{
+                    if(uid != currentUserUid){
+                        accountBtnFollowSingout?.text = getString(R.string.follow)
+                        accountBtnFollowSingout?.background?.colorFilter = null
+                    }
+                }
+            }
+        }
+    }
     fun getProfileImage(){
         firestore?.collection("profileImages")?.document(uid!!)?.addSnapshotListener{
             value: DocumentSnapshot?, error: FirebaseFirestoreException? ->
