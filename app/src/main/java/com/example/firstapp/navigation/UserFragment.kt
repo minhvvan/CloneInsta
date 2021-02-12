@@ -105,19 +105,19 @@ class UserFragment: Fragment(){
             if(followDTO == null){
                 followDTO = FollowDTO()
                 followDTO!!.followingCount = 1
-                followDTO!!.followers[uid!!] = true
+                followDTO!!.followings[uid!!] = true
 
                 transaction.set(tsDocFollowing, followDTO)
                 return@runTransaction
             }
 
-            if(followDTO.follwings.containsKey(uid)){
+            if(followDTO.followings.containsKey(uid)){
                 //remove following
                 followDTO?.followingCount = followDTO?.followingCount - 1
-                followDTO?.followers.remove(uid)
+                followDTO?.followings.remove(uid)
             }else{
                 followDTO?.followingCount = followDTO?.followingCount + 1
-                followDTO?.followers[uid!!] = true
+                followDTO?.followings[uid!!] = true
             }
             transaction.set(tsDocFollowing, followDTO)
             return@runTransaction
@@ -163,14 +163,10 @@ class UserFragment: Fragment(){
             if(followDTO?.followerCount != null){
                 accountTvFollowerCount?.text = followDTO?.followerCount.toString()
                 if(followDTO?.followers.containsKey(currentUserUid!!)){
-                    accountBtnFollowSingout?.text = getString(R.string.follow_cancel)
-                    accountBtnFollowSingout?.background?.colorFilter =
-                    BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ContextCompat.getColor(activity!!, R.color.colorLightGray), BlendModeCompat.MODULATE)
-                    accountBtnFollowSingout?.invalidate()
+                    accountBtnFollowSingout?.text = context?.getString(R.string.follow_cancel)
                 }else{
                     if(uid != currentUserUid){
-                        accountBtnFollowSingout?.text = getString(R.string.follow)
-                        accountBtnFollowSingout?.background?.colorFilter = null
+                        accountBtnFollowSingout?.text = context?.getString(R.string.follow)
                     }
                 }
             }
