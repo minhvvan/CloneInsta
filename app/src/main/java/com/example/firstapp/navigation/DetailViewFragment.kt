@@ -1,5 +1,6 @@
 package com.example.firstapp.navigation
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -66,6 +67,7 @@ class DetailViewFragment: Fragment(){
             var detailViewItem_explain_textView = viewHolder.findViewById<TextView>(R.id.detailViewItem_explain_textView)
             var detailViewItem_favoriteCounter_textView = viewHolder.findViewById<TextView>(R.id.detailViewItem_favoriteCounter_textView)
             var detailViewItem_favorite_imageView = viewHolder.findViewById<ImageView>(R.id.detailViewItem_favorite_imageView)
+            var detailViewItem_comment_imageView = viewHolder.findViewById<ImageView>(R.id.detailViewItem_comment_imageView)
 
             //favorite button click event
             detailViewItem_favorite_imageView.setOnClickListener {
@@ -94,6 +96,12 @@ class DetailViewFragment: Fragment(){
             //ProfileImage
             Glide.with(holder.itemView.context).load(contentDTOs!![position].imageUrl).into(detailViewItem_profile_image)
 
+            //comment
+            detailViewItem_comment_imageView.setOnClickListener { v ->
+                var intent = Intent(v.context, CommentActivity::class.java)
+                intent.putExtra("contentUid",contentUidList[position])
+                startActivity(intent)
+            }
             //go to other's profile
             detailViewItem_profile_image.setOnClickListener {
                 var fragment = UserFragment()
