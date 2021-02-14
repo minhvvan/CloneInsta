@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.firstapp.R
+import com.example.firstapp.navigation.model.AlarmDTO
 import com.example.firstapp.navigation.model.ContentDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,10 +23,12 @@ import com.google.firebase.firestore.QuerySnapshot
 
 class CommentActivity : AppCompatActivity() {
     var contentUid: String? = null
+    var destinationUid: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_comment)
         contentUid = intent.getStringExtra("contentUid")
+        destinationUid = intent.getStringExtra("destinationUid")
 
         var commentBtnSend = findViewById<Button>(R.id.comment_btn_send)
         var commentEditMessage = findViewById<EditText>(R.id.comment_edit_message)
@@ -42,11 +45,20 @@ class CommentActivity : AppCompatActivity() {
             comment.timestamp = System.currentTimeMillis()
 
             FirebaseFirestore.getInstance().collection("images").document(contentUid!!).collection("comments").document().set(comment)
-
+            commentAlarm(destinationUid!!, commentEditMessage.text.toString())
             commentEditMessage.setText("")
         }
     }
-
+    fun commentAlarm(destinationUid: String, message: String){
+        var alarmDTO = AlarmDTO()
+        alarmDTO.destinationUid = destinationUid
+        alarmDTO.userId = FirebaseAuth.getInstance().currentUser?.email
+        alarmDTO.uid = FirebaseAuth.getInstance().currentUser?.uid
+        alarmDTO.kind = 1
+        alarmDTO.timestamp = System.currentTimeMillis()
+        alarmDTO.message = message
+        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+    }
     inner class CommentRecyclerviewAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>(){
         var comments: ArrayList<ContentDTO.Comment> = arrayListOf()
         init{
