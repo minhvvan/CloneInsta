@@ -166,10 +166,10 @@ class UserFragment: Fragment(){
             if(followDTO?.followerCount != null){
                 accountTvFollowerCount?.text = followDTO?.followerCount.toString()
                 if(followDTO?.followers.containsKey(currentUserUid!!)){
-                    accountBtnFollowSingout?.text = context?.getString(R.string.follow_cancel)
+                    accountBtnFollowSingout?.text = getString(R.string.follow_cancel)
                 }else{
                     if(uid != currentUserUid){
-                        accountBtnFollowSingout?.text = context?.getString(R.string.follow)
+                        accountBtnFollowSingout?.text = getString(R.string.follow)
                     }
                 }
             }
