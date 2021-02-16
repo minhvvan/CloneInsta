@@ -5,12 +5,12 @@ import com.example.firstapp.navigation.model.PushDTO
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import okhttp3.*
+import serverKey
 import java.io.IOException
 
 class FcmPush{
     var JSON = MediaType.parse("application/json; charset=utf-8")
     var url = "https://fcm.googleapis.com/fcm/send"
-    val serverKey = "AAAAugm3DnE:APA91bFXDyKl_uU--GZOhAZeD0CtCW49TVLze26pfpD6k9IwsBmVIbb2BgrbIKn9gp0MhItutiMl7jqKupS_UNGOLbGhFP8QH3SFY1q19H8s_mrxXO0RRAuXSTE54eZqHbCguQpedlmn"
     var gson: Gson? = null
     var okHttpClient: OkHttpClient? = null
     companion object{
