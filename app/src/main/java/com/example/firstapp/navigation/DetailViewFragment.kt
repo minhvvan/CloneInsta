@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.navigation.model.AlarmDTO
 import com.example.firstapp.navigation.model.ContentDTO
+import com.example.firstapp.navigation.util.FcmPush
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -148,6 +149,9 @@ class DetailViewFragment: Fragment(){
             alarmDTO.kind = 0
             alarmDTO.timestamp = System.currentTimeMillis()
             FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+
+            var message = FirebaseAuth.getInstance()?.currentUser?.email + getString(R.string.alarm_favorite)
+            FcmPush.instance.sendMessage(destinationUid, "Instgram", message)
         }
     }
 }
